@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spelling Competition App - Grades 3 to 7</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#eef2f7;color:#18212b}
+header{background:#26374a;color:#fff;padding:22px 16px;text-align:center}header h1{margin:0 0 6px;font-size:28px}
+.container{max-width:920px;margin:20px auto;padding:0 14px}.panel,.card{background:#fff;border-radius:16px;padding:20px;box-shadow:0 3px 14px rgba(0,0,0,.10);margin-bottom:18px}
+button{border:0;border-radius:10px;padding:11px 16px;font-size:15px;font-weight:bold;cursor:pointer;margin:4px}
+button:hover{opacity:.88}.grade{background:#dbe6f2}.active{background:#26374a;color:white}.setbtn{background:#edf1f5}.selected{background:#566b80;color:#fff}
+.listen{background:#e5f0ff}.check{background:#dff3e3}.next{background:#fff0c9}.restart{background:#f2e2e2}
+input{width:100%;font-size:22px;padding:13px;border:2px solid #aeb8c2;border-radius:10px;margin:10px 0}
+.progress{height:10px;background:#e3e7eb;border-radius:10px;overflow:hidden;margin:12px 0}.bar{height:100%;background:#566b80;width:0}
+.wordno{text-align:center;font-weight:bold;font-size:18px}.prompt{text-align:center;color:#555}
+.result{font-size:19px;font-weight:bold;text-align:center;margin:14px 0}.correct{color:green}.wrong{color:#c62828}
+.score{font-size:27px;text-align:center;font-weight:bold;margin:15px}.small{text-align:center;color:#697582;font-size:13px}
+.hidden{display:none}.mode,.tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.stat{display:flex;justify-content:space-around;text-align:center;margin:12px 0;gap:8px}.stat div{background:#f2f5f8;padding:12px;border-radius:10px;min-width:105px}
+.stat b{display:block;font-size:22px}.offline{background:#eef7ee;border:1px solid #b9d9b9;border-radius:10px;padding:10px;margin:12px 0;text-align:center}
+</style>
+</head>
+<body>
+<header><h1>🏆 Spelling Competition App</h1><p>Grades 3–7 • Listen • Write • Check • Score</p></header>
+<div class="container">
+<div class="offline"><b>📴 Offline Mode Ready</b><br>All words, checking, scoring and tests work without internet. Pronunciation uses your device's speech engine.</div>
+
+<div class="panel" id="setup">
+<h2 style="text-align:center">Choose Class</h2>
+<div class="tabs" id="grades"></div>
+<h3 style="text-align:center">Choose Set</h3>
+<div class="tabs" id="sets"></div>
+<h3 style="text-align:center">Test Mode</h3>
+<div class="mode">
+<button class="setbtn selected" id="setMode" onclick="chooseMode('set')">📚 Selected Set</button>
+<button class="setbtn" id="allMode" onclick="chooseMode('all')">🔥 All 50 Words</button>
+<button class="setbtn" id="randomMode" onclick="chooseMode('random')">🔀 Random 50</button>
+</div>
+<div style="text-align:center;margin-top:15px"><button class="next" onclick="startTest()">▶ Start Competition</button></div>
+<p class="small">Grades 3–7 • 50 competition words per class • 250 words total</p>
+</div>
+
+<div class="card hidden" id="test">
+<div class="wordno" id="wordNo"></div><div class="progress"><div class="bar" id="bar"></div></div>
+<div class="stat"><div>Correct<b id="correctCount">0</b></div><div>Wrong<b id="wrongCount">0</b></div><div>Score<b id="liveScore">0%</b></div></div>
+<button class="listen" style="display:block;margin:15px auto" onclick="speakCurrent()">🔊 Listen to Pronunciation</button>
+<p class="prompt">Listen carefully and type the spelling:</p>
+<input id="answer" autocomplete="off" spellcheck="false" placeholder="Write the word you hear">
+<div style="text-align:center"><button class="check" onclick="checkAnswer()">✅ Check Answer</button><button class="listen" onclick="speakCurrent()">🔁 Listen Again</button></div>
+<div id="result" class="result"></div><div style="text-align:center" id="nextArea"></div>
+</div>
+
+<div class="card hidden" id="final">
+<div class="score">🎉 Test Complete!</div><div id="finalText"></div>
+<div style="text-align:center"><button class="restart" onclick="showSetup()">🏠 New Test</button><button class="next" onclick="startTest()">🔄 Try Again</button></div>
+</div>
+</div>
+
+<script>
+const data = {"2": [["teachers", "classroom", "vacation", "Konkan", "Tadoba", "alphabetical", "grapes", "celebrating", "chapati", "bhakari"], ["vegetables", "Puranpoli", "Aamras", "jaggery", "ingredients", "favourite", "recipe", "cucumbers", "sambar", "nineteen"], ["Rangotsav", "capital", "introduce", "grandmother", "grandfather", "brother", "family", "rhyming", "syllable", "seventeen"], ["rainbow", "umbrella", "raincoat", "sweater", "sunglasses", "carefully", "bullock", "scarecrow", "helicopter", "traffic"], ["signal", "instruments", "triangle", "Origami", "bamboo", "forest", "breeze", "bumblebee", "amazed", "tribal"]], "3": [["thoughts", "themselves", "introduce", "instructions", "important", "notebook", "dictionary", "syllables", "beautiful", "riverside"], ["decided", "questions", "characters", "chocolates", "beginning", "traveller", "curtains", "blazing", "seashells", "thermometer"], ["antiseptic", "medicines", "presentation", "temperature", "punctuation", "mountains", "brushing", "properly", "conversation", "expensive"], ["metro-train", "conversations", "paragraph", "pronunciations", "thoroughly", "grasshopper", "medicinal", "Rakshabandhan", "surprised", "newspapers"], ["librarian", "magazines", "meaningful", "rearrange", "distribution", "Mathematics", "Education", "happiness", "fireworks", "understood"]], "4": [["fun-filled", "delight", "invitation", "activities", "transitional", "neighbouring", "cleverness", "intonation", "leadership", "favourite"], ["punctuations", "identifying", "headmaster", "classroom", "listening", "etiquettes", "scribbles", "promised", "untidy", "discrimination"], ["superstitions", "cleanliness", "competition", "accordingly", "skyscraper", "stretched", "alphabetical", "digestion", "buffaloes", "established"], ["Independence", "exhibition", "jaggery-making", "bullock-cart", "ingredients", "recollect", "struggling", "slow-moving", "considered", "stomachache"], ["advantages", "chocolates", "vitamins", "tummyache", "comfortable", "statue", "treasure", "peasants", "tilling", "heartfelt"]], "5": [["carefully", "dialogue", "capital", "shapes", "welcome", "ninety-nine", "twenty-one", "beautiful", "diamonds", "farmer"], ["auto-rickshaw", "meaningful", "aeroplane", "motorbike", "squirrel", "spectacles", "phrases", "commands", "alphabetical", "Marathi"], ["threshed", "grains", "clothes-line", "scribbling", "Engineer", "bought", "Operation", "Cracked", "friendship", "shopkeeper"], ["tomorrow", "appropriate", "vegetables", "playground", "Everything", "interview", "address", "bicycle", "neighbouring", "specimen"], ["freight", "mountains", "precious", "darkness", "Thieves", "leaves", "sprang", "thorns", "highlighted", "appropriately"]], "6": [["Parched", "Shimmer", "Drenched", "Stubborn", "Greedily", "Scolding", "Advantages", "Psychology", "Pneumonia", "Encyclopaedia"], ["Environmentalists", "Conservation", "Sustainable", "Cultivation", "Traditional", "Underground", "Alliteration", "Consonant", "Syllables", "Pronunciation"], ["Responsibility", "Metaphor", "Comparison", "Puppeteer", "Expressive", "Celebrations", "Harmony", "Deities", "Exhibition", "Enthusiasm"], ["Repertoire", "Desiccated", "Sumptuous", "Simmering", "Assertive", "Imperative", "Interrogative", "Mother-in-law", "Appropriate", "Experimentation"], ["Geometry", "Symmetry", "Geometrical", "Poisonous", "Contracted", "Vocabulary", "Indigenous", "Wandering", "Mysterious", "Antakshari"]], "7": [["Unbelievable", "Interesting", "Surprising", "Pronunciation", "Vocabulary", "Permission", "Neighbour", "Interrupt", "Interjection", "Conjunction"], ["Puddle", "Kerchiefs", "Bespattered", "Accursed", "Purposely", "Quarrel", "Rejoicing", "Peasants", "Scattered", "Approximate"], ["Scriptures", "Pilgrimage", "Supernatural", "Vanquish", "Extraordinary", "Transformation", "Miraculous", "Disciples", "Imaginary", "Relatively"], ["Characteristics", "Punctual", "Challenging", "Determination", "Copycats", "Difficulties", "Membership", "Application", "Librarian", "Inspirational"], ["Multilingual", "Churchyard", "Periodicals", "Informative", "Ingredients", "Pomegranate", "Mouth-watering", "Quotations", "Scientific", "Modernisation"]]};
+
+let grade=3,setIndex=0,mode="set",words=[],pos=0,correct=0,wrong=0,checked=false;
+
+function renderGrades(){
+ const el=document.getElementById("grades");el.innerHTML="";
+ Object.keys(data).forEach(g=>{
+  const b=document.createElement("button");b.className="grade"+(Number(g)===grade?" active":"");
+  b.textContent="Grade "+g+" (50 words)";b.onclick=()=>{grade=Number(g);setIndex=0;mode="set";updateModeButtons();renderGrades();renderSets()};el.appendChild(b);
+ });
+}
+function renderSets(){
+ const el=document.getElementById("sets");el.innerHTML="";
+ data[grade].forEach((s,i)=>{
+  const b=document.createElement("button");b.className="setbtn"+(i===setIndex&&mode==="set"?" selected":"");
+  b.textContent="Set "+(i+1)+" (10)";b.onclick=()=>{setIndex=i;chooseMode("set");renderSets()};el.appendChild(b);
+ });
+}
+function chooseMode(m){mode=m;updateModeButtons();renderSets()}
+function updateModeButtons(){
+ document.querySelectorAll("#setMode,#allMode,#randomMode").forEach(x=>x.classList.remove("selected"));
+ document.getElementById(mode==="set"?"setMode":mode==="all"?"allMode":"randomMode").classList.add("selected");
+}
+function getWords(){
+ if(mode==="set")return [...data[grade][setIndex]];
+ let arr=[];data[grade].forEach(s=>arr.push(...s));
+ if(mode==="random")arr.sort(()=>Math.random()-.5);
+ return arr;
+}
+function startTest(){
+ words=getWords();pos=0;correct=0;wrong=0;checked=false;
+ document.getElementById("setup").classList.add("hidden");document.getElementById("final").classList.add("hidden");document.getElementById("test").classList.remove("hidden");
+ renderQuestion();
+}
+function renderQuestion(){
+ if(pos>=words.length){finish();return}
+ checked=false;document.getElementById("wordNo").textContent=`Word ${pos+1} of ${words.length}`;
+ document.getElementById("bar").style.width=(pos/words.length*100)+"%";
+ document.getElementById("correctCount").textContent=correct;document.getElementById("wrongCount").textContent=wrong;
+ document.getElementById("liveScore").textContent=Math.round(correct/(correct+wrong||1)*100)+"%";
+ document.getElementById("answer").value="";document.getElementById("answer").disabled=false;
+ document.getElementById("result").innerHTML="";document.getElementById("nextArea").innerHTML="";document.getElementById("answer").focus();
+}
+function speakCurrent(){
+ if(!("speechSynthesis" in window)){alert("This browser has no speech engine. The spelling test itself works offline. Enable an English offline Text-to-Speech voice on the device.");return}
+ speechSynthesis.cancel();const voices=speechSynthesis.getVoices? speechSynthesis.getVoices():[];
+ const u=new SpeechSynthesisUtterance(words[pos]);const v=voices.find(x=>/^en(-GB|-IN|-US)?$/i.test(x.lang))||voices.find(x=>/^en/i.test(x.lang));
+ if(v){u.voice=v;u.lang=v.lang}else u.lang="en";u.rate=.68;u.pitch=1;speechSynthesis.speak(u);
+}
+function checkAnswer(){
+ if(checked)return;checked=true;const answer=document.getElementById("answer").value.trim(),target=words[pos];
+ document.getElementById("answer").disabled=true;
+ if(answer.toLowerCase()===target.toLowerCase()){correct++;document.getElementById("result").className="result correct";document.getElementById("result").innerHTML="✅ RIGHT! Excellent spelling!"}
+ else{wrong++;document.getElementById("result").className="result wrong";document.getElementById("result").innerHTML=`❌ WRONG<br>Correct spelling: <strong>${escapeHtml(target)}</strong>`}
+ document.getElementById("correctCount").textContent=correct;document.getElementById("wrongCount").textContent=wrong;
+ document.getElementById("liveScore").textContent=Math.round(correct/(correct+wrong)*100)+"%";
+ const b=document.createElement("button");b.className="next";b.textContent=pos===words.length-1?"🏁 Finish":"➡ Next Word";b.onclick=()=>{pos++;renderQuestion()};document.getElementById("nextArea").appendChild(b);
+}
+function finish(){
+ document.getElementById("test").classList.add("hidden");document.getElementById("final").classList.remove("hidden");
+ const pct=Math.round(correct/words.length*100);let msg=pct>=90?"🏆 Outstanding!":pct>=75?"🌟 Very Good!":pct>=60?"👍 Good effort!":"💪 Keep practising!";
+ document.getElementById("finalText").innerHTML=`<div class="stat"><div>Class<b>${grade}</b></div><div>Words<b>${words.length}</b></div><div>Correct<b>${correct}</b></div><div>Wrong<b>${wrong}</b></div><div>Score<b>${pct}%</b></div></div><h2 style="text-align:center">${msg}</h2>`;
+}
+function showSetup(){document.getElementById("test").classList.add("hidden");document.getElementById("final").classList.add("hidden");document.getElementById("setup").classList.remove("hidden")}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+document.getElementById("answer").addEventListener("keydown",e=>{if(e.key==="Enter")checkAnswer()});
+renderGrades();renderSets();
+</script>
+</body>
+</html>
